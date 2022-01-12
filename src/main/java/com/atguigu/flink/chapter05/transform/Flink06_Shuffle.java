@@ -1,26 +1,28 @@
-package com.atguigu.flink.chapter05.source;
+package com.atguigu.flink.chapter05.transform;
 
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
-
-/**Source--->从文件读取数据(hdfs上)
- *
+/**
  * @author Evan
- * @ClassName Flink01_Source_File
- * @date 2022-01-12 14:47
+ * @ClassName Flink06_Shuffle
+ * @date 2022-01-12 20:04
  */
-public class Flink02_Source_File {
+public class Flink06_Shuffle {
     public static void main(String[] args) {
 
         Configuration conf = new Configuration();
         conf.setInteger("rest.port", 20000);
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment(conf);
-        env.setParallelism(1);
+        env.setParallelism(2);
 
-        DataStreamSource<String> stream = env.readTextFile("hdfs://hadoop102:8020/words.txt");
-        stream.print();
+        DataStreamSource<Integer> stream = env.fromElements(1, 3, 8, 4, 10);
+
+        stream
+            .shuffle()
+            .print();
+
         try {
             env.execute();
         } catch (Exception e) {

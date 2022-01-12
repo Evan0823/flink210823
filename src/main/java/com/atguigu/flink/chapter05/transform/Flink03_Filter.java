@@ -1,26 +1,33 @@
-package com.atguigu.flink.chapter05.source;
+package com.atguigu.flink.chapter05.transform;
 
+import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
-
-/**Source--->从文件读取数据(hdfs上)
- *
+/**
  * @author Evan
- * @ClassName Flink01_Source_File
- * @date 2022-01-12 14:47
+ * @ClassName Flink_Filter
+ * @date 2022-01-12 20:02
  */
-public class Flink02_Source_File {
+public class Flink03_Filter {
     public static void main(String[] args) {
 
         Configuration conf = new Configuration();
         conf.setInteger("rest.port", 20000);
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment(conf);
-        env.setParallelism(1);
+        env.setParallelism(2);
 
-        DataStreamSource<String> stream = env.readTextFile("hdfs://hadoop102:8020/words.txt");
-        stream.print();
+        DataStreamSource<Integer> stream = env.fromElements(1, 3, 8, 4, 10);
+
+        stream
+            .filter(new FilterFunction<Integer>() {
+                @Override
+                public boolean filter(Integer value) throws Exception {
+                    return value % 2 == 0;
+                }
+            })
+            .print();
         try {
             env.execute();
         } catch (Exception e) {
