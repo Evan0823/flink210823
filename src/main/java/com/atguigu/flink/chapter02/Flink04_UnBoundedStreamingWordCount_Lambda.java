@@ -22,7 +22,7 @@ import org.apache.flink.util.Collector;
  */
 public class Flink04_UnBoundedStreamingWordCount_Lambda {
     public static void main(String[] args) throws Exception {
-
+        System.out.println("xxxxxxxxx");
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
 
