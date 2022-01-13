@@ -18,10 +18,12 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
  * list
  * set
  * hash
+ *      key     value(hash)---hash本质就是一个map(),里层一个key,外层一个key
+ *      'a'     field   value
  * zset
  *
  * 不同的数据类型写入Redis的方法也不同
- * 返回命令描述符  set hset sadd lpush
+ * 返回命令描述符  set rpush sadd hset
  *
  * @author Evan
  * @ClassName Flink02_Redis
@@ -60,7 +62,7 @@ public class Flink02_Redis_String {
             .addSink(new RedisSink<>(
                 config,
                 new RedisMapper<WaterSensor>() {
-                    // 返回命令描述符  set hset sadd lpush
+                    // 返回命令描述符
                     @Override
                     public RedisCommandDescription getCommandDescription() {
                         return new RedisCommandDescription(RedisCommand.SET, "abc"); // 第二个参数只对hash和zset有效
