@@ -1,4 +1,4 @@
-package com.atguigu.flink.chapter05;
+package com.atguigu.flink.chapter05.sink;
 
 /**
  * @author Evan
