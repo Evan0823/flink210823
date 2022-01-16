@@ -6,4 +6,7 @@ package com.atguigu.flink.chapter05.sink;
  * @date 2022-01-13 22:15
  */
 public class Flink03_Jdbc {
+    public static void main(String[] args) {
+
+    }
 }
