@@ -19,6 +19,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class WaterSensor {
     private String id;
-    private Long ts;
+    private Long ts; // 作为事件时间
     private Integer vc;
 }
