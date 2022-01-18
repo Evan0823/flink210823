@@ -10,18 +10,16 @@ import org.apache.flink.util.Collector;
 
 import java.time.Duration;
 
-/**定时器---基于事件时间
+/**
+ * 需求：监控水位传感器的水位值，如果水位值在5s之内(event time)连续上升，则报警。
  *
- *      难点：如果输入ts=1000，注册一个定时器6000(1000+5000)，当水印大于等于6000时(当再次输入ts=9000,水印=9001-3000-1=6000)触发定时器
- *
- *      删除定时器：输入注册定时器，再输入另id=2,vc=10会删除定时器，删除的不是前面注册的那个
- *      （说明定时器与key有关）
+ *      无论哪种窗口都实现不了，用定时器实现
  *
  * @author Evan
  * @ClassName Flink01_Timer_1
  * @date 2022-01-17 14:54
  */
-public class Flink02_Timer_2 {
+public class Flink03_Project_Timer {
     public static void main(String[] args) {
 
         Configuration conf = new Configuration();
@@ -30,7 +28,7 @@ public class Flink02_Timer_2 {
         env.setParallelism(1);
 
         env
-            .socketTextStream("hadoop102", 9999)
+            .socketTextStream("hadoop162", 9999)
             .map(new MapFunction<String, WaterSensor>() {
                 @Override
                 public WaterSensor map(String line) throws Exception {
@@ -45,28 +43,42 @@ public class Flink02_Timer_2 {
             )
             .keyBy(WaterSensor::getId)
             .process(new KeyedProcessFunction<String, WaterSensor, String>() {
+                boolean isFirst = true;
                 long time;
+                int lastVc;
 
                 @Override
-                public void processElement(WaterSensor value, Context ctx, Collector<String> out) throws Exception {
-                    if (value.getVc() > 20) { // 当水位超过20,注册定时器(代表然后5s之后发出红色预警)
+                public void processElement(WaterSensor value,
+                                           Context ctx,
+                                           Collector<String> out) throws Exception {
+                    if (isFirst) {
+                        isFirst = false;
                         time = value.getTs() + 5000;
-                        System.out.println("定义定时器:" + time);
+                        System.out.println("第一条数过来, 注册定时器:" + time);
                         ctx.timerService().registerEventTimeTimer(time);
-                    } else if (value.getVc() == 10) {
-                        System.out.println("删除定时器:" + time); // 当水位为10时删除定时器,上一次的时间
-                        ctx.timerService().deleteEventTimeTimer(time);
+                    } else {
+                        if (value.getVc() > lastVc) {
+                            System.out.println("水位上升, 无需操作...");
+                        } else {
+                            System.out.println("水位没有上升, 注销上次注册的定时器");
+                            ctx.timerService().deleteEventTimeTimer(time);
+                            time = value.getTs() + 5000;
+                            System.out.println("再注册新的定时器:" + time);
+                            ctx.timerService().registerEventTimeTimer(time);
+                        }
                     }
+
+                    // 处理完所有逻辑之后,把当前的水位保存到上一个水位,等下一次使用
+                    lastVc = value.getVc();
                 }
 
-                // 当定时器触发的时候, 会自动回调这个方法
                 @Override
                 public void onTimer(long timestamp,
                                     OnTimerContext ctx,
                                     Collector<String> out) throws Exception {
-                    System.out.println("触发:" + timestamp);
+                    out.collect("连续5s上升, 发出预警...");
 
-                    out.collect(ctx.getCurrentKey() + " 水位超过了20 ,发出预警...");
+                    isFirst = true;
                 }
             })
             .print();
