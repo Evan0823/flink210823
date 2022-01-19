@@ -11,6 +11,7 @@ import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend;
 import org.apache.flink.contrib.streaming.state.RocksDBStateBackend;
 import org.apache.flink.runtime.state.filesystem.FsStateBackend;
 import org.apache.flink.runtime.state.hashmap.HashMapStateBackend;
+import org.apache.flink.runtime.state.memory.MemoryStateBackend;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.util.Collector;
@@ -48,7 +49,7 @@ public class Flink08_State_Backend {
          *      3.2新的
          */
         // 1.1旧的写法
-        //env.setStateBackend(new MemoryStateBackend()); //默认的
+//        env.setStateBackend(new MemoryStateBackend()); //默认的
         // 1.2新的写法
 //        env.setStateBackend(new HashMapStateBackend()); // 本地使用内存
 //        env.getCheckpointConfig().setCheckpointStorage(new JobManagerCheckpointStorage()); // 设置checkpoint的内存
